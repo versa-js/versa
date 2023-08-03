@@ -7,6 +7,10 @@ export default class BEM{
         this.base = base
     }
 
+    html(html){
+        this.node.innerHTML = html;
+    }
+
     append(element){
         if( typeof element === 'string' || element instanceof String ) {
             let temp = document.createElement('div');
