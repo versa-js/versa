@@ -1,0 +1,18 @@
+{
+  "name": "component",
+  "author": "Henrique Domingos",
+  "version": "1.0.0",
+  "description": "Flyweight ES6 component library",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "NODE_ENVIROMENT=dev node server.js",
+    "build": "rollup -c && terser dist/versa.js --compress --module --mangle -o dist/versa.min.js"
+  },
+  "license": "ISC",
+  "type": "module",
+  "devDependencies": {
+    "rollup": "^3.26.3",
+    "terser": "^5.19.1"
+  }
+}
