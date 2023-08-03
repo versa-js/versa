@@ -1,4 +1,3 @@
-import env from './env.js'
 import BEM from './BEM.js'
 import eventHandler from './EventHandler.js'
 import Component from './Component.js'
