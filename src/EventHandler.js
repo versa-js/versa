@@ -29,17 +29,18 @@ class EventHandler {
       let name = base.dataset['component'];
       let component = this.modules[name];
 
-      if( !component.events[event.type][name] ){
+      if( !component.events[event.type] ){
         continue;
       }
 
       component
-        .events[event.type][name]
+        .events[event.type]
         .call( component, new BEM(base, component.name), event)
     }
   }
 
   handleComponentEvent(){
+
     let path = event
       .composedPath()
       .filter((el) => el.tagName && ['HTML'].indexOf(el.tagName) == -1 );

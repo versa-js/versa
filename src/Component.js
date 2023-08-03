@@ -17,7 +17,7 @@ export default class Component {
     }
 
     for( let event in this.global ){
-      this.register(`${this.name}`, event, this.global[event]);
+      this.events[event] = this.global[event];
       eventHandler.addEvent(event);
     }
   }
