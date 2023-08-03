@@ -46,14 +46,14 @@ export default class BEM{
 
     element(name){
         return new BEM( 
-            this.node.querySelector(`.${this.base}_${name}`),
+            this.node.querySelector(`.${this.base}__${name}`),
             this.base
         )
     }
 
     elements(name){
         let items = [];
-        for(let item of this.node.querySelectorAll(`.${this.base}_${name}`)){
+        for(let item of this.node.querySelectorAll(`.${this.base}__${name}`)){
             items.push(new BEM(item, this.base));
         }
 
