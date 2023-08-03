@@ -1,8 +1,3 @@
-const defaults = {
-	base: '/versa'
-};
-const env = Object.assign( defaults,  window.versaEnv || {});
-
 class BEM{
     node = null
     base = 'base'
@@ -10,6 +5,10 @@ class BEM{
     constructor(node, base=''){
         this.node = node;
         this.base = base;
+    }
+
+    html(html){
+        this.node.innerHTML = html;
     }
 
     append(element){
@@ -47,14 +46,14 @@ class BEM{
 
     element(name){
         return new BEM( 
-            this.node.querySelector(`.${this.base}_${name}`),
+            this.node.querySelector(`.${this.base}__${name}`),
             this.base
         )
     }
 
     elements(name){
         let items = [];
-        for(let item of this.node.querySelectorAll(`.${this.base}_${name}`)){
+        for(let item of this.node.querySelectorAll(`.${this.base}__${name}`)){
             items.push(new BEM(item, this.base));
         }
 
@@ -78,6 +77,10 @@ class EventHandler {
     this.modules[module.name] = module;
   }
 
+  getModule(module){
+    return this.modules[module]
+  }
+
   handleEvent(event) {
     if (!event.target || !event.target.tagName || ['HTML'].indexOf(event.target.tagName) != -1) return;
     event.isGlobal? this.handleGlobalEvent(event) : this.handleComponentEvent(event);
@@ -90,17 +93,18 @@ class EventHandler {
       let name = base.dataset['component'];
       let component = this.modules[name];
 
-      if( !component.events[event.type][name] ){
+      if( !component.events[event.type] ){
         continue;
       }
 
       component
-        .events[event.type][name]
+        .events[event.type]
         .call( component, new BEM(base, component.name), event);
     }
   }
 
   handleComponentEvent(){
+
     let path = event
       .composedPath()
       .filter((el) => el.tagName && ['HTML'].indexOf(el.tagName) == -1 );
@@ -133,7 +137,7 @@ class EventHandler {
 
 }
 
-const eventHandler = new EventHandler;
+const eventHandler = new EventHandler();
 
 class Component {
   name = 'component'
@@ -152,7 +156,7 @@ class Component {
     }
 
     for( let event in this.global ){
-      this.register(`${this.name}`, event, this.global[event]);
+      this.events[event] = this.global[event];
       eventHandler.addEvent(event);
     }
   }
@@ -169,6 +173,13 @@ class Component {
     event.isGlobal = true;
     document.body.dispatchEvent(event);
   }
+
+  static addModule(module){
+    if( !Object.keys(module.events).length ){
+      module.bootstrap();
+    }
+    eventHandler.addModule(module);
+  }
 }
 
 const installComponents = () => {
@@ -177,11 +188,23 @@ const installComponents = () => {
 
     let name = component.dataset['component'];
 
-    import(`${env.base}/${name}/module.js`)
+    let module = eventHandler.getModule(name);
+    if( module ){
+      try{
+        module.install.call(module, new BEM(component, module.name));
+        component.installed = true;
+      }catch(e){
+        component.installed = true;
+        console.error(e);
+      }
+
+      return;
+    }
+
+    import(`/versa/${name}/module.js`)
       .then((loaded) => {
         let module = new loaded.default();
         eventHandler.addModule(module);
-        component.component_name = name;
 
         try {
           module.bootstrap();
@@ -212,6 +235,6 @@ const componentObserver = (mutations, observer) => {
 
 const mutationObserver = new MutationObserver( componentObserver );
 mutationObserver.observe(document.body, { childList: true, subtree: true });
-installComponents();
+setTimeout(installComponents);
 
 export { Component as default };
