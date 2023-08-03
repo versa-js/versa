@@ -34,4 +34,11 @@ export default class Component {
     event.isGlobal = true;
     document.body.dispatchEvent(event);
   }
+
+  static addModule(module){
+    if( !Object.keys(module.events).length ){
+      module.bootstrap();
+    }
+    eventHandler.addModule(module)
+  }
 }

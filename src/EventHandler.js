@@ -14,7 +14,11 @@ class EventHandler {
   }
 
   addModule(module){
-    this.modules[module.name] = module;
+    this.modules[module.name] = module
+  }
+
+  getModule(module){
+    return this.modules[module]
   }
 
   handleEvent(event) {
@@ -73,5 +77,5 @@ class EventHandler {
 
 }
 
-const eventHandler = new EventHandler;
+const eventHandler = new EventHandler();
 export default eventHandler;

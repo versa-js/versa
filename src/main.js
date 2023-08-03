@@ -9,11 +9,23 @@ const installComponents = () => {
 
     let name = component.dataset['component'];
 
-    import(`${env.base}/${name}/module.js`)
+    let module = eventHandler.getModule(name);
+    if( module ){
+      try{
+        module.install.call(module, new BEM(component, module.name));
+        component.installed = true;
+      }catch(e){
+        component.installed = true;
+        console.error(e)
+      }
+
+      return;
+    }
+
+    import(`/versa/${name}/module.js`)
       .then((loaded) => {
         let module = new loaded.default();
         eventHandler.addModule(module);
-        component.component_name = name;
 
         try {
           module.bootstrap();
@@ -44,6 +56,6 @@ const componentObserver = (mutations, observer) => {
 
 const mutationObserver = new MutationObserver( componentObserver );
 mutationObserver.observe(document.body, { childList: true, subtree: true });
-installComponents();
+setTimeout(installComponents);
 
 export default Component;
