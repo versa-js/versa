@@ -67,8 +67,8 @@ class EventHandler {
           component.events[event.type][target_class]
             .call(
               component,
-              new BEM(element, component.name),
               new BEM(base, component.name),
+              new BEM(element, component.name),
               event
             )
         }
