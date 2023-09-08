@@ -9,6 +9,7 @@ export default class BEM{
 
     html(html){
         this.node.innerHTML = html;
+        return this;
     }
 
     append(element){

@@ -23,7 +23,7 @@ class EventHandler {
 
   handleEvent(event) {
     if (!event.target || !event.target.tagName || ['HTML'].indexOf(event.target.tagName) != -1) return;
-    event.isGlobal? this.handleGlobalEvent(event) : this.handleComponentEvent(event);
+    event.target == document.body ? this.handleGlobalEvent(event) : this.handleComponentEvent(event);
   }
 
   handleGlobalEvent(event){
@@ -32,18 +32,19 @@ class EventHandler {
     for( let base of bases ){
       let name = base.dataset['component'];
       let component = this.modules[name];
+      let event_name = `_${event.type}`;
 
-      if( !component.events[event.type] ){
+      if( !component.events[event_name] ){
         continue;
       }
-
+  
       component
-        .events[event.type]
-        .call( component, new BEM(base, component.name), event)
+        .events[event_name]
+        .call( component, new BEM(base, component.name), event);
     }
   }
 
-  handleComponentEvent(){
+  handleComponentEvent(event){
 
     let path = event
       .composedPath()

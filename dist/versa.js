@@ -9,6 +9,7 @@ class BEM{
 
     html(html){
         this.node.innerHTML = html;
+        return this;
     }
 
     append(element){
@@ -83,7 +84,7 @@ class EventHandler {
 
   handleEvent(event) {
     if (!event.target || !event.target.tagName || ['HTML'].indexOf(event.target.tagName) != -1) return;
-    event.isGlobal? this.handleGlobalEvent(event) : this.handleComponentEvent(event);
+    event.target == document.body ? this.handleGlobalEvent(event) : this.handleComponentEvent(event);
   }
 
   handleGlobalEvent(event){
@@ -92,18 +93,19 @@ class EventHandler {
     for( let base of bases ){
       let name = base.dataset['component'];
       let component = this.modules[name];
+      let event_name = `_${event.type}`;
 
-      if( !component.events[event.type] ){
+      if( !component.events[event_name] ){
         continue;
       }
-
+  
       component
-        .events[event.type]
+        .events[event_name]
         .call( component, new BEM(base, component.name), event);
     }
   }
 
-  handleComponentEvent(){
+  handleComponentEvent(event){
 
     let path = event
       .composedPath()
@@ -156,7 +158,7 @@ class Component {
     }
 
     for( let event in this.global ){
-      this.events[event] = this.global[event];
+      this.events[`_${event}`] = this.global[event];
       eventHandler.addEvent(event);
     }
   }
@@ -170,7 +172,6 @@ class Component {
   emit(name, payload){
     const event = new Event(name);
     event.payload = payload;
-    event.isGlobal = true;
     document.body.dispatchEvent(event);
   }
 

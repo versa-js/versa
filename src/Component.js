@@ -17,7 +17,7 @@ export default class Component {
     }
 
     for( let event in this.global ){
-      this.events[event] = this.global[event];
+      this.events[`_${event}`] = this.global[event];
       eventHandler.addEvent(event);
     }
   }
@@ -31,7 +31,6 @@ export default class Component {
   emit(name, payload){
     const event = new Event(name);
     event.payload = payload
-    event.isGlobal = true;
     document.body.dispatchEvent(event);
   }
 
