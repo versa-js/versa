@@ -28,11 +28,7 @@ export default class Component {
     this.events[event][target] = fn;
   }
 
-  emit(name, payload){
-    const event = new Event(name);
-    event.payload = payload
-    document.body.dispatchEvent(event);
-  }
+  
 
   static addModule(module){
     if( !Object.keys(module.events).length ){

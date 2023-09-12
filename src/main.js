@@ -53,8 +53,14 @@ const componentObserver = (mutations, observer) => {
   if (update) installComponents();
 }
 
+function emit(name, payload){
+  const event = new Event(name);
+  event.payload = payload
+  document.body.dispatchEvent(event);
+}
+
 const mutationObserver = new MutationObserver( componentObserver );
 mutationObserver.observe(document.body, { childList: true, subtree: true });
 setTimeout(installComponents);
 
-export default Component;
+export default { Component, emit };

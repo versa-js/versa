@@ -169,11 +169,7 @@ class Component {
     this.events[event][target] = fn;
   }
 
-  emit(name, payload){
-    const event = new Event(name);
-    event.payload = payload;
-    document.body.dispatchEvent(event);
-  }
+  
 
   static addModule(module){
     if( !Object.keys(module.events).length ){
@@ -234,8 +230,16 @@ const componentObserver = (mutations, observer) => {
   if (update) installComponents();
 };
 
+function emit(name, payload){
+  const event = new Event(name);
+  event.payload = payload;
+  document.body.dispatchEvent(event);
+}
+
 const mutationObserver = new MutationObserver( componentObserver );
 mutationObserver.observe(document.body, { childList: true, subtree: true });
 setTimeout(installComponents);
 
-export { Component as default };
+var main = { Component, emit };
+
+export { main as default };
