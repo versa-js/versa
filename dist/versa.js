@@ -95,7 +95,7 @@ class EventHandler {
       let component = this.modules[name];
       let event_name = `_${event.type}`;
 
-      if( !component.events[event_name] ){
+      if( !component.events || !component.events[event_name] ){
         continue;
       }
   
@@ -240,6 +240,4 @@ const mutationObserver = new MutationObserver( componentObserver );
 mutationObserver.observe(document.body, { childList: true, subtree: true });
 setTimeout(installComponents);
 
-var main = { Component, emit };
-
-export { main as default };
+export { Component, Component as default, emit };

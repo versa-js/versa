@@ -34,10 +34,12 @@ class EventHandler {
       let component = this.modules[name];
       let event_name = `_${event.type}`;
 
-      if( !component.events[event_name] ){
+      if( !component.events || !component.events[event_name] ){
         continue;
       }
   
+      console.log( component.events[event_name] );
+      
       component
         .events[event_name]
         .call( component, new BEM(base, component.name), event);

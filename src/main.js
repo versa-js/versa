@@ -63,4 +63,5 @@ const mutationObserver = new MutationObserver( componentObserver );
 mutationObserver.observe(document.body, { childList: true, subtree: true });
 setTimeout(installComponents);
 
-export default { Component, emit };
+export { Component, emit };
+export default Component;
