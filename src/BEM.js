@@ -1,10 +1,13 @@
 export default class BEM{
     node = null
-    base = 'base'
+    basename = 'base'
+    base = null
 
-    constructor(node, base=''){
+
+    constructor(node, basename='', base){
         this.node = node
-        this.base = base
+        this.base = (base)? base : node
+        this.basename = basename
     }
 
     html(html){
@@ -16,7 +19,6 @@ export default class BEM{
         if( typeof element === 'string' || element instanceof String ) {
             let temp = document.createElement('div');
             temp.innerHTML = element;
-
             for (const el of temp.children) {
                 this.node.appendChild(el) 
             }
@@ -45,17 +47,18 @@ export default class BEM{
         return this.node.classList.contains(`is-${state}`);
     }
 
-    element(name){
+    element(name, root){
         return new BEM( 
-            this.node.querySelector(`.${this.base}__${name}`),
-            this.base
+            ((root)? this.base : this.node).querySelector(`.${this.basename}__${name}`),
+            this.basename,
+            this.base,
         )
     }
 
-    elements(name){
+    elements(name, root){
         let items = [];
-        for(let item of this.node.querySelectorAll(`.${this.base}__${name}`)){
-            items.push(new BEM(item, this.base));
+        for(let item of ((root)? this.base : this.node).querySelectorAll(`.${this.basename}__${name}`)){
+            items.push(new BEM(item, this.basename, this.base));
         }
 
         return items;

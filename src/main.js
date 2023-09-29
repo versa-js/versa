@@ -3,22 +3,20 @@ import eventHandler from './EventHandler.js'
 import Component from './Component.js'
 
 const installComponents = () => {
-  for( let component of document.querySelectorAll('[data-component]')){
-    if (component.installed) continue;
+  for( const component of document.querySelectorAll('[data-component]:not([versa-installed])')){
+    const name = component.dataset['component'];
 
-    let name = component.dataset['component'];
-
-    let module = eventHandler.getModule(name);
+    const module = eventHandler.getModule(name);
     if( module ){
       try{
         module.install.call(module, new BEM(component, module.name));
-        component.installed = true;
+        component.setAttribute('versa-installed', true)
       }catch(e){
-        component.installed = true;
+        component.setAttribute('versa-installed', true)
         console.error(e)
       }
 
-      return;
+      continue;
     }
 
     import(`/versa/${name}/module.js`)
@@ -29,10 +27,10 @@ const installComponents = () => {
         try {
           module.bootstrap();
           module.install.call(module, new BEM(component, module.name));
-          component.installed = true;
+          component.setAttribute('versa-installed', true)
 
         } catch (e) {
-          component.installed = true;
+          component.setAttribute('versa-installed', true)
           console.error(e)
         }
       });
@@ -59,9 +57,13 @@ function emit(name, payload){
   document.body.dispatchEvent(event);
 }
 
+function on(event, handler){
+  eventHandler.addExternalEvent(event, handler)
+}
+
 const mutationObserver = new MutationObserver( componentObserver );
 mutationObserver.observe(document.body, { childList: true, subtree: true });
 setTimeout(installComponents);
 
-export { Component, emit };
+export { Component, emit, on, BEM };
 export default Component;

@@ -5,12 +5,19 @@ class EventHandler {
   mutationObserver = null
   modules = {}
   events = []
+  external_events = {}
 
   addEvent(event) {
     if( this.events.indexOf(event) != -1 ) return;
 
     document.addEventListener(event, event => this.handleEvent(event), true);
     this.events.push(event);
+  }
+
+  addExternalEvent(event, handler){
+    this.addEvent(event);
+    this.external_events[event] = this.external_events[event] || [];
+    this.external_events[event].push(handler);
   }
 
   addModule(module){
@@ -37,13 +44,25 @@ class EventHandler {
       if( !component.events || !component.events[event_name] ){
         continue;
       }
-  
-      console.log( component.events[event_name] );
-      
+
       component
         .events[event_name]
         .call( component, new BEM(base, component.name), event);
     }
+
+    this.handleExternalEvent(event);
+  }
+
+  handleExternalEvent(event){
+    const handlers = this.external_events[event.type];
+    
+    if(!handlers){
+      return;
+    }
+
+    handlers.forEach(handler => {
+      handler(event);
+    });
   }
 
   handleComponentEvent(event){
