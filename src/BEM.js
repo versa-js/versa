@@ -31,6 +31,11 @@ export default class BEM{
     }
 
     state(name, status){
+        if(!this.node){
+            console.warn(`.${this.basename}__${name} not found, cant set ${name} state`)
+            return this;
+        }
+
         let classList = this.node.classList
         let className = `is-${name}`
 
