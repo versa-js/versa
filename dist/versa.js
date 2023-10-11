@@ -1,10 +1,13 @@
 class BEM{
     node = null
-    base = 'base'
+    basename = 'base'
+    base = null
 
-    constructor(node, base=''){
+
+    constructor(node, basename='', base){
         this.node = node;
-        this.base = base;
+        this.base = (base)? base : node;
+        this.basename = basename;
     }
 
     html(html){
@@ -16,7 +19,6 @@ class BEM{
         if( typeof element === 'string' || element instanceof String ) {
             let temp = document.createElement('div');
             temp.innerHTML = element;
-
             for (const el of temp.children) {
                 this.node.appendChild(el); 
             }
@@ -29,6 +31,11 @@ class BEM{
     }
 
     state(name, status){
+        if(!this.node){
+            console.warn(`.${this.basename}__${name} not found, cant set ${name} state`);
+            return this;
+        }
+
         let classList = this.node.classList;
         let className = `is-${name}`;
 
@@ -45,17 +52,18 @@ class BEM{
         return this.node.classList.contains(`is-${state}`);
     }
 
-    element(name){
+    element(name, root){
         return new BEM( 
-            this.node.querySelector(`.${this.base}__${name}`),
-            this.base
+            ((root)? this.base : this.node).querySelector(`.${this.basename}__${name}`),
+            this.basename,
+            this.base,
         )
     }
 
-    elements(name){
+    elements(name, root){
         let items = [];
-        for(let item of this.node.querySelectorAll(`.${this.base}__${name}`)){
-            items.push(new BEM(item, this.base));
+        for(let item of ((root)? this.base : this.node).querySelectorAll(`.${this.basename}__${name}`)){
+            items.push(new BEM(item, this.basename, this.base));
         }
 
         return items;
@@ -66,12 +74,19 @@ class EventHandler {
   mutationObserver = null
   modules = {}
   events = []
+  external_events = {}
 
   addEvent(event) {
     if( this.events.indexOf(event) != -1 ) return;
 
     document.addEventListener(event, event => this.handleEvent(event), true);
     this.events.push(event);
+  }
+
+  addExternalEvent(event, handler){
+    this.addEvent(event);
+    this.external_events[event] = this.external_events[event] || [];
+    this.external_events[event].push(handler);
   }
 
   addModule(module){
@@ -98,11 +113,25 @@ class EventHandler {
       if( !component.events || !component.events[event_name] ){
         continue;
       }
-  
+
       component
         .events[event_name]
         .call( component, new BEM(base, component.name), event);
     }
+
+    this.handleExternalEvent(event);
+  }
+
+  handleExternalEvent(event){
+    const handlers = this.external_events[event.type];
+    
+    if(!handlers){
+      return;
+    }
+
+    handlers.forEach(handler => {
+      handler(event);
+    });
   }
 
   handleComponentEvent(event){
@@ -180,22 +209,20 @@ class Component {
 }
 
 const installComponents = () => {
-  for( let component of document.querySelectorAll('[data-component]')){
-    if (component.installed) continue;
+  for( const component of document.querySelectorAll('[data-component]:not([versa-installed])')){
+    const name = component.dataset['component'];
 
-    let name = component.dataset['component'];
-
-    let module = eventHandler.getModule(name);
+    const module = eventHandler.getModule(name);
     if( module ){
       try{
         module.install.call(module, new BEM(component, module.name));
-        component.installed = true;
+        component.setAttribute('versa-installed', true);
       }catch(e){
-        component.installed = true;
+        component.setAttribute('versa-installed', true);
         console.error(e);
       }
 
-      return;
+      continue;
     }
 
     import(`/versa/${name}/module.js`)
@@ -206,10 +233,10 @@ const installComponents = () => {
         try {
           module.bootstrap();
           module.install.call(module, new BEM(component, module.name));
-          component.installed = true;
+          component.setAttribute('versa-installed', true);
 
         } catch (e) {
-          component.installed = true;
+          component.setAttribute('versa-installed', true);
           console.error(e);
         }
       });
@@ -236,8 +263,12 @@ function emit(name, payload){
   document.body.dispatchEvent(event);
 }
 
+function on(event, handler){
+  eventHandler.addExternalEvent(event, handler);
+}
+
 const mutationObserver = new MutationObserver( componentObserver );
 mutationObserver.observe(document.body, { childList: true, subtree: true });
 setTimeout(installComponents);
 
-export { Component, Component as default, emit };
+export { BEM, Component, Component as default, emit, on };
